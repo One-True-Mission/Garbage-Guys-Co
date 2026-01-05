@@ -581,3 +581,4 @@ input:hover, select:hover, textarea:hover{
   left: 14px;
   top: 14px;
 }
+html { outline: 10px solid hotpink !important; }
