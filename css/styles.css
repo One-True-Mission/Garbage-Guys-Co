@@ -24,39 +24,57 @@ body{
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   color: var(--text);
 
-  /* Keep your original background exactly as-is */
-  background: radial-gradient(1200px 900px at 15% 15%, #0f2c1c 0%, var(--bg) 60%),
-              radial-gradient(900px 700px at 85% 25%, #2b1f06 0%, rgba(0,0,0,0) 55%),
-              var(--bg);
+  /* SAME vibe, slightly slower fade to reduce banding */
+  background:
+    radial-gradient(1200px 900px at 15% 15%, #0f2c1c 0%, var(--bg) 70%),
+    radial-gradient(900px 700px at 85% 25%, #2b1f06 0%, rgba(0,0,0,0) 55%),
+    var(--bg);
 
   /* Needed for overlay layering */
   position: relative;
   isolation: isolate;
 }
 
-/* ===== ANTI-BANDING (updated) =====
-   This sits ABOVE the gradient but BELOW content, and uses fractal noise.
+/* ===== ANTI-BANDING LAYER #1 (dither noise) =====
+   Sits above the gradient but below content.
+   Strong enough to actually break banding on Chrome + iOS Safari.
 */
 body::before{
   content:"";
   position: fixed;
   inset: 0;
   pointer-events: none;
-
-  /* IMPORTANT: must be >= 0 so it's above the background paint */
   z-index: 0;
 
-  /* Adjust if needed: 0.08–0.14 */
-  opacity: 0.11;
-  mix-blend-mode: soft-light;
+  /* Tune: 0.16–0.22 (higher = more banding removal, but can look grainy) */
+  opacity: 0.18;
+  mix-blend-mode: overlay;
 
-  /* Fractal noise tile (excellent dithering) */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.40'/%3E%3C/svg%3E");
+  /* Smaller tile + higher frequency = better dithering */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
   background-repeat: repeat;
-  background-size: 220px 220px;
+  background-size: 140px 140px;
 }
 
-/* Ensure all page content stays above the noise overlay */
+/* ===== ANTI-BANDING LAYER #2 (smoothing wash) =====
+   Very subtle. Softens gradient steps without changing the overall design.
+*/
+body::after{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  /* Tune: 0.14–0.26 (higher = smoother, but can reduce contrast) */
+  opacity: 0.22;
+
+  background:
+    radial-gradient(1200px 900px at 15% 15%, rgba(15,44,28,0.30) 0%, rgba(7,19,13,0.00) 65%),
+    radial-gradient(900px 700px at 85% 25%, rgba(43,31,6,0.22) 0%, rgba(0,0,0,0.00) 60%);
+}
+
+/* Ensure all page content stays above the overlay layers */
 body > *{
   position: relative;
   z-index: 1;
@@ -161,6 +179,7 @@ a{ color: inherit; text-decoration: none; }
   display:flex;
   flex-direction:column;
   gap: 10px;
+认为
 }
 .drawer.isOpen{ transform: translateX(0); }
 .drawer__head{ display:flex; align-items:center; justify-content:space-between; }
