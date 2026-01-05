@@ -1,167 +1,101 @@
-// ---------- app.js ----------
-// Background brightness slider (persisted)
-const sliderSelector = '#brightness';
-const BR_KEY = 'bg_brightness_pct';
+// ====== SET YOUR BUSINESS PHONE NUMBER HERE ======
+// Use digits only for tel: and sms links
+const BUSINESS_PHONE = "9036179086";
+const BUSINESS_TEXT = BUSINESS_PHONE;
 
-function applyBrightness(pct){
-  const value = Math.max(50, Math.min(115, Number(pct)||85));
-  const normalized = (value/100).toFixed(2);
-  document.documentElement.style.setProperty('--bg-brightness', normalized);
+// Optional: pre-filled text message
+const DEFAULT_SMS_MESSAGE =
+  "Hi! I'm interested in Garbage Guys Co. service. Can you tell me the next steps?";
+
+// ====== Helper: format estimate ======
+function calcEstimate(base, cans) {
+  const extraCans = Math.max(0, cans - 1);
+  return base + extraCans * 5;
 }
 
-function initBrightness(){
-  const saved = localStorage.getItem(BR_KEY);
-  const slider = document.querySelector(sliderSelector);
-  if(slider){
-    if(saved){ slider.value = saved; applyBrightness(saved); }
-    slider.addEventListener('input', (e)=>{
-      const v = e.target.value;
-      localStorage.setItem(BR_KEY, v);
-      applyBrightness(v);
-    });
-  }else if(saved){
-    applyBrightness(saved);
-  }
+function money(n) {
+  return `$${n}`;
 }
 
-// Off‑canvas menu
-const menu = {
-  wrap: document.getElementById('sidemenu'),
-  btn: document.querySelector('.hamburger'),
-  close: null,
-  backdrop: document.querySelector('.backdrop'),
-  open(){
-    this.wrap.classList.add('open');
-    this.wrap.setAttribute('aria-hidden','false');
-    this.btn?.setAttribute('aria-expanded','true');
-    this.backdrop.hidden = false;
-  },
-  hide(){
-    this.wrap.classList.remove('open');
-    this.wrap.setAttribute('aria-hidden','true');
-    this.btn?.setAttribute('aria-expanded','false');
-    this.backdrop.hidden = true;
-  },
-  init(){
-    if(!this.wrap) return;
-    this.close = this.wrap.querySelector('.close');
-    this.btn?.addEventListener('click', ()=> this.open());
-    this.close?.addEventListener('click', ()=> this.hide());
-    this.backdrop?.addEventListener('click', ()=> this.hide());
-    document.addEventListener('keydown', (e)=>{
-      if(e.key === 'Escape') this.hide();
-    });
-  }
-};
+function setContactLinks() {
+  const smsHref = `sms:${BUSINESS_TEXT}?&body=${encodeURIComponent(DEFAULT_SMS_MESSAGE)}`;
+  const telHref = `tel:${BUSINESS_PHONE}`;
 
-// Utilities
-function hashString(s){
-  let h = 0; for(let i=0;i<s.length;i++){ h = (h<<5)-h + s.charCodeAt(i); h|=0; }
-  return Math.abs(h);
+  const textBtn = document.getElementById("textBtn");
+  const callBtn = document.getElementById("callBtn");
+  const textBtn2 = document.getElementById("textBtn2");
+  const callBtn2 = document.getElementById("callBtn2");
+
+  if (textBtn) textBtn.href = smsHref;
+  if (textBtn2) textBtn2.href = smsHref;
+  if (callBtn) callBtn.href = telHref;
+  if (callBtn2) callBtn2.href = telHref;
 }
 
-function pickDailyIndex(total){
-  const d = new Date();
-  const key = `${d.getUTCFullYear()}-${d.getUTCMonth()+1}-${d.getUTCDate()}`;
-  return hashString(key) % total;
+function initEstimator() {
+  const tierSelect = document.getElementById("tierSelect");
+  const canCount = document.getElementById("canCount");
+  const estimate = document.getElementById("estimate");
+
+  if (!tierSelect || !canCount || !estimate) return;
+
+  const update = () => {
+    const base = Number(tierSelect.value || 0);
+    const cans = Number(canCount.value || 1);
+    const total = calcEstimate(base, cans);
+    estimate.textContent = money(total);
+  };
+
+  tierSelect.addEventListener("change", update);
+  canCount.addEventListener("input", update);
+  update();
 }
 
-function renderScripture(item){
-  if(!item) return;
-  document.getElementById('ref').textContent = item.ref;
-  document.getElementById('verse').textContent = item.verse;
-  document.getElementById('meaning').textContent = item.meaning;
-}
+function initMobileMenu() {
+  const btn = document.getElementById("menuBtn");
+  const drawer = document.getElementById("drawer");
+  const backdrop = document.getElementById("backdrop");
+  const closeBtn = document.getElementById("drawerClose");
+  const links = document.querySelectorAll(".drawerLink");
 
-async function loadData(){
-  const res = await fetch('data/scriptures.json');
-  const data = await res.json();
-  return data.scriptures || [];
-}
+  if (!btn || !drawer || !backdrop || !closeBtn) return;
 
-function normalized(s){ return (s||'').toLowerCase(); }
+  const open = () => {
+    drawer.classList.add("isOpen");
+    drawer.setAttribute("aria-hidden", "false");
+    backdrop.hidden = false;
+    btn.setAttribute("aria-expanded", "true");
+  };
 
-function searchItems(items, q){
-  const qq = normalized(q);
-  if(!qq) return null;
-  const found = items.find(it =>
-    normalized(it.ref).includes(qq) ||
-    normalized(it.verse).includes(qq) ||
-    normalized(it.meaning).includes(qq) ||
-    (it.keywords||[]).some(k => normalized(k).includes(qq))
-  );
-  return found || null;
-}
+  const close = () => {
+    drawer.classList.remove("isOpen");
+    drawer.setAttribute("aria-hidden", "true");
+    backdrop.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  };
 
-async function initScripture(){
-  const items = await loadData();
-  const total = items.length;
-
-  // Default daily pick
-  let current = items[pickDailyIndex(total)];
-  renderScripture(current);
-
-  // Search
-  const form = document.getElementById('searchForm');
-  const field = document.getElementById('q');
-  form?.addEventListener('submit', (e)=>{
-    e.preventDefault();
-    const q = field.value.trim();
-    if(!q){ field.focus(); return; }
-    const hit = searchItems(items, q);
-    if(hit){ renderScripture(hit); }
-    else{
-      document.getElementById('ref').textContent = 'Coming soon';
-      document.getElementById('verse').textContent = 'We don\\'t have that verse yet. Check back later!';
-      document.getElementById('meaning').textContent = 'Tip: try a different reference (e.g., “John 3:16”) or a few keywords (e.g., “good shepherd hope”).';
-    }
+  btn.addEventListener("click", () => {
+    const isOpen = drawer.classList.contains("isOpen");
+    isOpen ? close() : open();
   });
 
-  // Another (random)
-  document.getElementById('another')?.addEventListener('click', (e)=>{
-    e.preventDefault();
-    let i = Math.floor(Math.random()*total);
-    if(items[i] === current){ i = (i+1) % total; }
-    current = items[i];
-    renderScripture(current);
-  });
+  closeBtn.addEventListener("click", close);
+  backdrop.addEventListener("click", close);
+  links.forEach((a) => a.addEventListener("click", close));
 
-  // Copy
-  document.getElementById('copy')?.addEventListener('click', async ()=>{
-    const text = `${current.ref}\\n${current.verse}\\n\\nWhat this means:\\n${current.meaning}`;
-    try{
-      await navigator.clipboard.writeText(text);
-      alert('Copied to clipboard.');
-    }catch{ alert('Copy failed.'); }
-  });
-
-  // Share (if supported)
-  document.getElementById('share')?.addEventListener('click', async ()=>{
-    const text = `${current.ref} — ${current.verse}`;
-    if(navigator.share){
-      try{ await navigator.share({ text }); } catch{ /* closed */ }
-    }else{
-      alert('Sharing not supported on this device.');
-    }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
   });
 }
 
-function initYear(){
-  const el = document.getElementById('year');
-  if(el) el.textContent = new Date().getFullYear();
+function setYear() {
+  const el = document.getElementById("year");
+  if (el) el.textContent = String(new Date().getFullYear());
 }
 
-// iOS momentum scroll hint for fixed bg (prevents raster banding)
-(function(){
-  const div = document.createElement('div');
-  div.style.height = '1px'; document.body.appendChild(div);
-  setTimeout(()=> div.remove(), 0);
-})();
-
-// Boot
-window.addEventListener('DOMContentLoaded', ()=>{
-  initBrightness();
-  menu.init();
-  initScripture();
-  initYear();
+document.addEventListener("DOMContentLoaded", () => {
+  setYear();
+  setContactLinks();
+  initEstimator();
+  initMobileMenu();
 });
