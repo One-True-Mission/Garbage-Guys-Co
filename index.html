@@ -24,11 +24,15 @@
   <header class="topbar">
     <div class="container topbar__inner">
       <a class="brand" href="#top" aria-label="Garbage Guys Co. Home">
-        <img 
-  src="assets/garbage-guys-co-logo.png" 
-  alt="Garbage Guys Co. Logo" 
-  class="site-logo"
-/>
+
+        <!-- Updated: correct path + logo class -->
+        <img
+          src="./assets/garbage-guys-co-logo.png"
+          alt="Garbage Guys Co. Logo"
+          class="site-logo"
+          loading="eager"
+          decoding="async"
+        />
 
         <span class="brand__text">
           <span class="brand__name">Garbage Guys Co.</span>
@@ -319,8 +323,6 @@
           <div class="contactCard">
             <h3>Request Service/Question Form</h3>
 
-            <!-- OPTION A (recommended): Formspree -->
-            <!-- 1) Create a free Formspree form and replace the action URL below -->
             <form id="contactForm" class="form" method="POST" action="https://formspree.io/f/xkogegor">
               <label class="field">
                 <span>Name</span>
@@ -362,14 +364,13 @@
                 Tip: If you don’t like phone calls, no worries—we can reply by text.
               </p>
             </form>
-
-            <!-- OPTION B: If you don’t want a form yet, you can switch to a mailto link -->
-            <!-- <a class="btn btn--full" href="mailto:youremail@example.com?subject=Garbage%20Guys%20Co.%20Service%20Request">Email request</a> -->
           </div>
 
           <div class="contactCard contactCard--side">
             <h3>Quick Contact</h3>
-            <p class="muted">For quicker response, You can text or call. </code>.</p>
+
+            <!-- Fixed: removed stray </code> -->
+            <p class="muted">For quicker response, you can text or call.</p>
 
             <div class="contactBtns">
               <a class="btn btn--full" id="textBtn" href="#">Text us</a>
@@ -393,8 +394,10 @@
 
             <div class="divider"></div>
 
+            <!-- Fixed: closed the <p> tag -->
             <p class="small muted">
               By messaging, you agree we may contact you about your request.
+            </p>
           </div>
         </div>
       </div>
