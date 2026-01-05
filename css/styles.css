@@ -1,0 +1,128 @@
+/* ---------- styles.css ---------- */
+/* Theme tokens */
+:root{
+  --bg-brightness: 0.85;      /* 0.50–1.15 via slider */
+  --tint: rgba(255,255,255,.85);
+  --tint-weak: rgba(255,255,255,.65);
+  --ink: #2b2118;
+  --muted: #6b5550;
+  --brand: #a86b3d;
+  --brand-ink: #fff;
+  --shadow: 0 16px 40px rgba(0,0,0,.20);
+  --radius: 16px;
+  --maxw: 900px;
+}
+
+/* Fixed background (always centered) */
+.bg{
+  position: fixed;
+  inset: 0;
+  background: url('../assets/bg.jpg') center / cover no-repeat fixed;
+  filter: brightness(var(--bg-brightness));
+  z-index: -2;
+}
+/* faint overlay for readability */
+.shade{
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,.25), rgba(255,255,255,.1) 60%);
+  z-index: -1;
+}
+
+/* Topbar */
+.topbar{
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  background: color-mix(in oklab, var(--tint) 80%, transparent);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+.brand{
+  margin: 0;
+  font-size: clamp(22px, 4vw, 32px);
+  line-height: 1.1;
+  letter-spacing: .02em;
+  color: #9a5f35;
+  text-shadow: 0 1px 0 rgba(255,255,255,.8);
+}
+.hamburger{
+  font-size: 22px;
+  background: transparent;
+  border: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.hamburger:focus{ outline: 2px solid #9a5f35; outline-offset: 2px; }
+
+/* Off‑canvas menu */
+.sidemenu{
+  position: fixed; inset: 0 0 0 auto;
+  width: min(420px, 86vw);
+  background: var(--tint);
+  translate: 100% 0;
+  transition: translate .25s ease;
+  box-shadow: -8px 0 30px rgba(0,0,0,.2);
+  z-index: 20;
+}
+.sidemenu.open{ translate: 0 0; }
+.menu-inner{ height: 100%; display: grid; grid-template-rows: auto 1fr auto; gap: 16px; padding: 18px; }
+.sidemenu .close{ justify-self: end; border: 0; background: transparent; font-size: 28px; }
+.sidemenu .btn.shop{ background: #c2462d; color: #fff; }
+.sidemenu .links{ display: grid; gap: 10px; }
+.sidemenu .link{ padding: 10px 12px; border-radius: 10px; background: #f2e7d4; color: var(--ink); text-decoration: none; }
+.settings{ border-top: 1px solid rgba(0,0,0,.06); padding-top: 12px; }
+.settings label{ display:block; font-weight:600; margin-bottom: 6px;}
+.settings input[type="range"]{ width: 100%; }
+.backdrop{
+  position: fixed; inset: 0; background: rgba(0,0,0,.25); z-index: 15;
+}
+
+/* Layout */
+.wrap{ width: min(var(--maxw), 92vw); margin-inline: auto; padding: 22px 0 80px; }
+.search{ display: grid; grid-template-columns: 1fr auto; gap: 10px; margin: 10px 0 18px; }
+.search input{
+  padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(0,0,0,.08);
+  background: var(--tint); color: var(--ink);
+}
+.card{
+  background: var(--tint);
+  color: var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(14px, 2.4vw, 22px);
+  margin: 14px 0;
+}
+.verse-card{ background: color-mix(in oklab, var(--tint) 82%, white 18%); }
+.meaning-card{ background: color-mix(in oklab, var(--tint) 92%, white 8%); }
+.ref{ margin: 0 0 6px; font-size: clamp(18px, 3.3vw, 24px); color: #7e4c2a; }
+.verse{ font-size: clamp(18px, 2.8vw, 22px); line-height: 1.5; }
+.meaning{ font-size: clamp(16px, 2.6vw, 20px); line-height: 1.6; color: #2b2118; }
+
+.actions{ display:flex; gap:10px; margin-top: 10px; flex-wrap: wrap; }
+
+.btn{
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: #f1d7b4;
+  cursor: pointer;
+}
+.btn.ghost{ background: #f8efe3; }
+
+.footnote{ text-align:center; color: var(--muted); margin-top: 12px; }
+
+.footer{
+  position: sticky; bottom: 0;
+  display: flex; justify-content: space-between; gap: 12px; align-items: center;
+  padding: 12px 16px;
+  color: #6b5550;
+  font-size: 14px;
+  background: color-mix(in oklab, var(--tint-weak) 70%, transparent);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+}
+
+/* Responsive helpers */
+@media (min-width: 720px){
+  .wrap{ padding-top: 28px; }
+}
